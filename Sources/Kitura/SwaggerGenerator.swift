@@ -646,9 +646,16 @@ public struct SwaggerDocument: Encodable {
                     // Note: We do not handle a difference in input vs. output encoding - although it
                     // is possible to configure Kitura this way, it is not compatible with REST.
                     switch self.dateEncodingStrategy {
+                    // Swift 6 Foundation on Linux has no `.formatted` case: `.formatted(_:)` returns `.custom`, which uses the default branch.
+                    #if !os(Linux) || compiler(<6.0)
                     case .iso8601, .formatted(_):
                         // Date is serialized to a string
                         property = try swaggerPropertyFromSwiftType(String.self)
+                    #else
+                    case .iso8601:
+                        // Date is serialized to a string
+                        property = try swaggerPropertyFromSwiftType(String.self)
+                    #endif
                     case .secondsSince1970, .millisecondsSince1970:
                         // Date is serialized to an integer value
                         property = try swaggerPropertyFromSwiftType(Int64.self)
